@@ -6,28 +6,24 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Timestamp;
+import java.util.Set;
 
 @Entity
-@Table(name = "STOCK")
+@Table(name = "SAGA")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class Stock {
+public class Saga {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private Boolean availability;
+    @Column(nullable = false)
+    private String name;
 
-    @Column
-    private Timestamp lastUpdated;
-
-    @ManyToOne
-    @JoinColumn(name = "videogame_id", nullable = false)
-    private VideoGame videoGame;
+    @ManyToMany(mappedBy = "sagas")
+    private Set<VideoGame> videoGames;
 
 }
