@@ -24,6 +24,9 @@ public class VideoGame {
     private String title;
 
     @OneToMany(mappedBy = "videoGame")
+    private Set<Promotion> promotions;
+
+    @OneToMany(mappedBy = "videoGame")
     private Set<Stock> stocks;
 
     @ManyToMany

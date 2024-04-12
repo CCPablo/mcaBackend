@@ -1,6 +1,6 @@
 package com.mca.controller;
 
-import com.mca.controller.dto.RelatedGameSagas;
+import com.mca.controller.dto.RelatedGameSagasId;
 import com.mca.service.SagaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,9 +21,9 @@ public class SagaController {
     }
 
     @GetMapping("/{gameId}/related-sagas")
-    public ResponseEntity<RelatedGameSagas> getRelatedSagas(@PathVariable Long gameId) {
-        RelatedGameSagas relatedSagas = new RelatedGameSagas();
-        List<Long> sagasId = sagaService.getVideoGameRelatedSagas(gameId);
+    public ResponseEntity<RelatedGameSagasId> getRelatedSagas(@PathVariable Long gameId) {
+        RelatedGameSagasId relatedSagas = new RelatedGameSagasId();
+        List<Long> sagasId = sagaService.getVideoGameRelatedSagasId(gameId);
         relatedSagas.addAll(sagasId);
         return ResponseEntity.ok(relatedSagas);
     }
