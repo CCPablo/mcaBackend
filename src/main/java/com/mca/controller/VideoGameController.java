@@ -21,6 +21,15 @@ public class VideoGameController {
         this.videoGameService = videoGameService;
     }
 
+    @GetMapping("/{gameId}")
+    public ResponseEntity<GameDTO> getGame(@PathVariable Long gameId) {
+        GameDTO gameDTO = videoGameService.getVideoGameById(gameId);
+        if(gameDTO == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(gameDTO);
+    }
+
     @GetMapping("/{gameId}/saga")
     public ResponseEntity<RelatedGames> getRelatedGames(@PathVariable Long gameId) {
         RelatedGames relatedGames = new RelatedGames();

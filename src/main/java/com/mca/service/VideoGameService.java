@@ -12,7 +12,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class VideoGameService {
@@ -23,29 +22,41 @@ public class VideoGameService {
         this.videoGameRepository = videoGameRepository;
     }
 
+    public GameDTO getVideoGameById(long videoGameId) {
+        return videoGameRepository.findById(videoGameId)
+                .map(videoGame -> GameDTO.builder()
+                        .id(videoGame.getId().toString())
+                        .title(videoGame.getTitle())
+                        .availability(getLatestAvailability(videoGame))
+                        .price(getMostRecentAndCheapPrice(videoGame))
+                        .build())
+                .orElse(null);
+    }
+
     public List<GameDTO> getRelatedVideoGamesByItsSagas(long videoGameId) {
         return videoGameRepository.findRelatedVideoGamesByGameIdSortedByRelevance(videoGameId).stream()
                 .map(videoGame -> GameDTO.builder()
                         .id(videoGame.getId().toString())
                         .title(videoGame.getTitle())
-                        .availability(getAvailability(videoGame))
-                        .price(getVideoGamePrice(videoGame))
+                        .availability(getLatestAvailability(videoGame))
+                        .price(getMostRecentAndCheapPrice(videoGame))
                         .build())
                 .toList();
     }
 
-    private BigDecimal getVideoGamePrice(VideoGame videoGame) {
-        Optional<Promotion> currentPromotion = videoGame.getPromotions().stream()
-                .filter(promotion -> promotion.getValidFrom().before(Timestamp.from(Instant.now())))
-                .min(Comparator.comparing(Promotion::getValidFrom)
-                        .thenComparing(Promotion::getPrice));
-        return currentPromotion.map(Promotion::getPrice).orElse(null);
+    private BigDecimal getMostRecentAndCheapPrice(VideoGame videoGame) {
+        return videoGame.getPromotions().stream()
+                .filter(promotion -> promotion.getValidFrom().toInstant().isBefore(Instant.now()))
+                .max(Comparator.comparing(Promotion::getValidFrom)
+                        .thenComparing(Promotion::getPrice, Comparator.reverseOrder()))
+                .map(Promotion::getPrice)
+                .orElse(null);
     }
 
-    private boolean getAvailability(VideoGame videoGame) {
-        Optional<Stock> availableStock = videoGame.getStocks().stream()
-                .filter(stock -> Boolean.TRUE.equals(stock.getAvailability()))
-                .findFirst();
-        return availableStock.isPresent();
+    private boolean getLatestAvailability(VideoGame videoGame) {
+        return videoGame.getStocks().stream()
+                .min(Comparator.comparing(Stock::getLastUpdated))
+                .map(stock -> Boolean.TRUE.equals(stock.getAvailability()))
+                .orElse(false);
     }
 }
